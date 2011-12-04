@@ -68,9 +68,10 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 		playcount = self.get_playcount(artist, title)
 		print "Setting playcount for \"%s - %s\" to %d" % (artist, title, playcount)
 		self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
+		self.db.commit()
 		
 	def get_playcount(self, artist, title):
-		requesturi = "http://ws.audioscrobbler.com/2.0/?method=track.getinfo&api_key=%s&artist=%s&track=%s&username=%s" % (LASTFM_API_KEY, artist, title, LASTFM_USERNAME)
+		requesturi = "http://ws.audioscrobbler.com/2.0/?method=track.getinfo&api_key=%s&artist=%s&track=%s&username=%s&autocorrect=1" % (LASTFM_API_KEY, artist, title, LASTFM_USERNAME)
 		response = minidom.parse(urlopen(requesturi))
 		playcount = response.getElementsByTagName("userplaycount")[0].childNodes[0].data
 		playcount = int(playcount)
