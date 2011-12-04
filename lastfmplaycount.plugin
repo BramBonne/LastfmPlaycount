@@ -1,0 +1,9 @@
+[Plugin]
+Loader=python
+Module=lastfmplaycount
+IAge=1
+Depends=rb
+Name=Last.fm playcount synchronization
+Description=Synchronize the playcount of the currently playing song with your Last.fm profile
+Authors=Bram Bonné <bram.bonne@gmail.com>
+Website=http://research.edm.uhasselt.be/~bbonne
