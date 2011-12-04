@@ -28,7 +28,7 @@ import gi
 from gi.repository import GObject, Gtk, Gdk, GdkPixbuf, Gio, Peas, RB
 
 from xml.dom import minidom
-from urllib import urlopen
+from urllib import urlopen, urlencode
 
 LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
 LASTFM_API_SECRET = "66ee536eddd3fb72a84b5780a54ef822"
@@ -71,8 +71,9 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 		self.db.commit()
 		
 	def get_playcount(self, artist, title):
-		requesturi = "http://ws.audioscrobbler.com/2.0/?method=track.getinfo&api_key=%s&artist=%s&track=%s&username=%s&autocorrect=1" % (LASTFM_API_KEY, artist, title, LASTFM_USERNAME)
-		response = minidom.parse(urlopen(requesturi))
+		params = urlencode({'method':'track.getinfo', 'api_key':LASTFM_API_KEY,
+			'artist':artist, 'track':title, 'username':LASTFM_USERNAME, 'autocorrect':1})
+		response = minidom.parse(urlopen("http://ws.audioscrobbler.com/2.0/?%s" % params))
 		playcount = response.getElementsByTagName("userplaycount")[0].childNodes[0].data
 		playcount = int(playcount)
 		return playcount
