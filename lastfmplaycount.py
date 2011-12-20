@@ -32,8 +32,9 @@ from urllib import urlopen, urlencode
 
 from threading import Thread
 
+from os import path
+
 LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
-LASTFM_USERNAME = "megooz" # TODO: read from last.fm plugin configuration
 
 class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 	__gtype_name__ = 'LastFmPlaycount'
@@ -45,12 +46,15 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 	def do_activate (self):
 		self.shell = self.object
 		sp = self.shell.props.shell_player
+		self.emitting_uri_notify = False
+		self.db = self.shell.props.db
+		
+		self.find_username()
+		
+		self.current_entry = None
 		self.player_cb_ids = (
 			sp.connect ('playing-song-changed', self.playing_entry_changed),
 		)
-		self.emitting_uri_notify = False
-		self.db = self.shell.props.db
-		self.current_entry = None
 		self.playing_entry_changed (sp, sp.get_playing_entry ())
 
 	def do_deactivate (self):
@@ -58,6 +62,19 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 		for id in self.player_cb_ids:
 			sp.disconnect (id)
 		self.player_cb_ids = ()
+		
+	def find_username(self):
+	    #TODO: get this via dconf as soon as new rhythmbox APIs support it
+	    #Probably something like
+	    #client = gconf.client_get_default()
+	    #self._username = client.get_string("/apps/rhythmbox/audioscrobbler/username")
+	    as_session = open(path.expanduser('~/.local/share/rhythmbox/audioscrobbler/sessions'), 'r')
+	    for line in as_session.readlines():
+	        tokens = line.strip('\n ').split('=', 1)
+	        if tokens[0] == 'username':
+	            self._username = tokens[1]
+	            break
+	    print "Last.fm username: %s" % self._username
 		
 	def playing_entry_changed (self, sp, entry):
 	    newthread = Thread(target=self.update_playcount, args=(entry,))
@@ -74,7 +91,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 		
 	def get_playcount(self, artist, title):
 		params = urlencode({'method':'track.getinfo', 'api_key':LASTFM_API_KEY,
-			'artist':artist, 'track':title, 'username':LASTFM_USERNAME, 'autocorrect':1})
+			'artist':artist, 'track':title, 'username':self._username, 'autocorrect':1})
 		response = minidom.parse(urlopen("http://ws.audioscrobbler.com/2.0/?%s" % params))
 		playcount = response.getElementsByTagName("userplaycount")[0].childNodes[0].data
 		playcount = int(playcount)
