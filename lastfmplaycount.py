@@ -32,6 +32,7 @@ from urllib import urlopen, urlencode
 
 from threading import Thread
 
+from ConfigParser import RawConfigParser
 from os import path
 
 LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
@@ -68,17 +69,16 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 	    #Probably something like
 	    #client = gconf.client_get_default()
 	    #self._username = client.get_string("/apps/rhythmbox/audioscrobbler/username")
+	    config = RawConfigParser()
 	    as_session = open(path.expanduser('~/.local/share/rhythmbox/audioscrobbler/sessions'), 'r')
-	    for line in as_session.readlines():
-	        tokens = line.strip('\n ').split('=', 1)
-	        if tokens[0] == 'username':
-	            self._username = tokens[1]
-	            break
+	    config.readfp(as_session)
+	    self._username = config.get('Last.fm', 'username')
 	    print "Last.fm username: %s" % self._username
 		
 	def playing_entry_changed (self, sp, entry):
-	    newthread = Thread(target=self.update_playcount, args=(entry,))
-	    newthread.start()
+	    if entry is not None:
+	        newthread = Thread(target=self.update_playcount, args=(entry,))
+	        newthread.start()
 
 	def update_playcount (self, entry):
 		artist = entry.get_string(RB.RhythmDBPropType.ARTIST)
