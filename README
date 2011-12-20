@@ -1,0 +1,32 @@
+Info
+====
+
+The Last.fm playcount synchronization plugin for Rhythmbox fetches the
+currently playing track's playcount from Last.fm, and updates your Rhythmbox
+database accordingly.
+The Last.fm username is read from Rhythmbox' Last.fm plugin.
+
+
+How to install for the current user (locally)
+=============================================
+
+Create the directory ~/.local/share/rhythmbox/plugins/lastfmplaycount
+    mkdir ~/.local/share/rhythmbox/plugins/lastfmplaycount
+Copy the files in the current directory to the newly created directory
+    cp * ~/.local/share/rhythmbox/plugins/lastfmplaycount
+    
+    
+How to install for all users (globally, needs root/sudo rights)
+===============================================================
+
+Create the directory /usr/lib/rhythmbox/plugins/lastfmplaycount
+    sudo mkdir /usr/lib/rhythmbox/plugins/lastfmplaycount
+Copy the files in the current directory to the newly created directory
+    cp * /usr/lib/rhythmbox/plugins/lastfmplaycount
+        
+
+Credits
+=======
+
+Plugin created by Bram Bonné <bram.bonne at gmail dot com>
+Submit bug reports/issues to https://github.com/BramBonne/LastfmPlaycount/issues
