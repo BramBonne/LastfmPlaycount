@@ -30,14 +30,15 @@ from gi.repository import GObject, Gtk, Gdk, GdkPixbuf, Gio, Peas, RB
 from xml.dom import minidom
 from urllib import urlopen, urlencode
 
+from threading import Thread
+
 LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
-LASTFM_API_SECRET = "66ee536eddd3fb72a84b5780a54ef822"
-LASTFM_USERNAME = "megooz" # TODO: make editable from interface
+LASTFM_USERNAME = "megooz" # TODO: read from last.fm plugin configuration
 
 class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 	__gtype_name__ = 'LastFmPlaycount'
 	object = GObject.property(type=GObject.GObject)
-
+	
 	def __init__ (self):
 		GObject.GObject.__init__ (self)
 
@@ -59,7 +60,8 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 		self.player_cb_ids = ()
 		
 	def playing_entry_changed (self, sp, entry):
-		self.update_playcount(entry)
+	    newthread = Thread(target=self.update_playcount, args=(entry,))
+	    newthread.start()
 
 	def update_playcount (self, entry):
 		artist = entry.get_string(RB.RhythmDBPropType.ARTIST)
