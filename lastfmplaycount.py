@@ -70,12 +70,8 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 	
     def get_username(self):
         """
-        Get the username from the session/cache of rhythmbox' audioscrobbler
-        plugin.
-        TODO: get this via dconf as soon as new rhythmbox APIs support it,
-        will probably something like
-            client = gconf.client_get_default()
-            self._username = client.get_string("/apps/rhythmbox/audioscrobbler/username")
+        Get the username from the session file of rhythmbox' audioscrobbler
+        plugin as per http://mail.gnome.org/archives/rhythmbox-devel/2011-December/msg00029.html
         """
         config = RawConfigParser()
         # Expanduser expands '~' into '/home/<username>/'
