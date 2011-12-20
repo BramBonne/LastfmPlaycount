@@ -78,7 +78,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
             self._username = client.get_string("/apps/rhythmbox/audioscrobbler/username")
         """
         config = RawConfigParser()
-        # Expanduser expands '~' into '/home/<username/'
+        # Expanduser expands '~' into '/home/<username>/'
         as_session = open(path.expanduser('~/.local/share/rhythmbox/audioscrobbler/sessions'), 'r')
         config.readfp(as_session)
         username = config.get('Last.fm', 'username')
