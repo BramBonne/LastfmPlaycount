@@ -1,7 +1,9 @@
+import gconf
+
 from ConfigParser import RawConfigParser, NoSectionError
 from os import path
 
-CONFIGFILENAME = '~/.local/share/rhythmbox/audioscrobbler/lastfmplaycount'
+GCONF_DIR = '/apps/rhythmbox/plugins/lastfmplaycount'
 
 class Config:
     """
@@ -11,7 +13,9 @@ class Config:
     def __init__(self):
         self._parse_username()
         
-        self._config_parser = RawConfigParser()
+        self._gconf_client = gconf.client_get_default()
+        self._gconf_client.add_dir(GCONF_DIR, gconf.CLIENT_PRELOAD_RECURSIVE)
+        
         self._init_config()
         
     def __del__(self):
@@ -19,18 +23,13 @@ class Config:
         
     def _init_config(self):
         """
-        Reads the config file, and writes default values if the file doesn't exist yet
+        Creates default values if none exist (this should actually be solved
+        with a GConf Schema, but documentation seems to be available only behind
+        the gates of Mordor).
         """
-        # Expanduser expands '~' into '/home/<username>/'
-        try:
-            configfile = open(path.expanduser(CONFIGFILENAME), 'r')
-            self._config_parser.readfp(configfile)
-        except:
-            print "Config file does not exist. Using default values."
-        # If no values exist, fill in default ones
-        if not self._config_parser.has_option('LastFmPlaycount', 'update_playcounts'):
+        if self._gconf_client.get_without_default(GCONF_DIR + '/update_playcounts') is None:
             self.set_update_playcounts(True)
-        if not self._config_parser.has_option('LastFmPlaycount', 'update_ratings'):
+        if self._gconf_client.get_without_default(GCONF_DIR + '/update_ratings') is None:
             self.set_update_ratings(True)
         
     def get_username(self):
@@ -47,53 +46,35 @@ class Config:
         """
         @return Whether the user has specified that he wants his playcounts updated
         """
-        return self._config_parser.getboolean('LastFmPlaycount', 'update_playcounts')
+        return self._gconf_client.get_bool(GCONF_DIR + '/update_playcounts')
         
     def set_update_playcounts(self, update):
         """
         Sets whether the user wants his playcounts to be updated
         @update True if the user wants his playcounts to be updated
         """
-        # Configparser only allows strings to be stored
-        if update == True:
-            update = 'True'
-        else:
-            update = 'False'
-        try:
-            self._config_parser.set('LastFmPlaycount', 'update_playcounts', update)
-        except NoSectionError:
-            self._config_parser.add_section('LastFmPlaycount')
-            self._config_parser.set('LastFmPlaycount', 'update_playcounts', update)
+        self._gconf_client.set_bool(GCONF_DIR + '/update_playcounts', update)
         
     def get_update_ratings(self):
         """
         @return Whether the user has specified that he wants his ratings updated
         """
-        return self._config_parser.getboolean('LastFmPlaycount', 'update_ratings')
+        return self._gconf_client.get_bool(GCONF_DIR + '/update_ratings')
         
     def set_update_ratings(self, update):
         """
         Sets whether the user wants his ratings to be updated
         @update True if the user wants his ratings to be updated
         """
-        # Configparser only allows strings to be stored
-        if update == True:
-            update = 'True'
-        else:
-            update = 'False'
-        try:
-            self._config_parser.set('LastFmPlaycount', 'update_ratings', update)
-        except NoSectionError:
-            self._config_parser.add_section('LastFmPlaycount')
-            self._config_parser.set('LastFmPlaycount', 'update_ratings', update)
+        self._gconf_client.set_bool(GCONF_DIR + '/update_ratings', update)
         
     def write(self):
         """
         Writes config file to permanent storage
         """
-        configfile = open(path.expanduser(CONFIGFILENAME), 'w')
-        self._config_parser.write(configfile)
-        
+        # Not needed for gconf
+        pass
+                
     def _parse_username(self):
         """
         Get the username from the session file of rhythmbox' audioscrobbler
