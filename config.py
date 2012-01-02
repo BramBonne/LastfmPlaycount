@@ -1,5 +1,7 @@
-from ConfigParser import RawConfigParser
+from ConfigParser import RawConfigParser, NoSectionError
 from os import path
+
+CONFIGFILENAME = '~/.local/share/rhythmbox/audioscrobbler/lastfmplaycount'
 
 class Config:
     """
@@ -8,6 +10,28 @@ class Config:
     
     def __init__(self):
         self._parse_username()
+        
+        self._config_parser = RawConfigParser()
+        self._init_config()
+        
+    def __del__(self):
+        self.write()
+        
+    def _init_config(self):
+        """
+        Reads the config file, and writes default values if the file doesn't exist yet
+        """
+        # Expanduser expands '~' into '/home/<username>/'
+        try:
+            configfile = open(path.expanduser(CONFIGFILENAME), 'r')
+            self._config_parser.readfp(configfile)
+        except:
+            print "Config file does not exist. Using default values."
+        # If no values exist, fill in default ones
+        if not self._config_parser.has_option('LastFmPlaycount', 'update_playcount'):
+            self.set_update_playcount(True)
+        if not self._config_parser.has_option('LastFmPlaycount', 'update_ratings'):
+            self.set_update_ratings(True)
         
     def get_username(self):
         """
@@ -18,6 +42,47 @@ class Config:
             self._username = self._retrieve_username()
             
         return self._username
+        
+    def get_update_playcount(self):
+        """
+        @return Whether the user has specified that he wants his playcounts updated
+        """
+        return self._config_parser.getboolean('LastFmPlaycount', 'update_playcount')
+        
+    def set_update_playcount(self, update):
+        """
+        Sets whether the user wants his playcounts to be updated
+        @update True if the user wants his playcounts to be updated
+        """
+        try:
+            self._config_parser.set('LastFmPlaycount', 'update_playcount', update)
+        except NoSectionError:
+            self._config_parser.add_section('LastFmPlaycount')
+            self._config_parser.set('LastFmPlaycount', 'update_playcount', update)
+        
+    def get_update_ratings(self):
+        """
+        @return Whether the user has specified that he wants his ratings updated
+        """
+        return self._config_parser.getboolean('LastFmPlaycount', 'update_ratings')
+        
+    def set_update_ratings(self, update):
+        """
+        Sets whether the user wants his ratings to be updated
+        @update True if the user wants his ratings to be updated
+        """
+        try:
+            self._config_parser.set('LastFmPlaycount', 'update_ratings', update)
+        except NoSectionError:
+            self._config_parser.add_section('LastFmPlaycount')
+            self._config_parser.set('LastFmPlaycount', 'update_ratings', update)
+        
+    def write(self):
+        """
+        Writes config file to permanent storage
+        """
+        configfile = open(path.expanduser(CONFIGFILENAME), 'w')
+        self._config_parser.write(configfile)
         
     def _parse_username(self):
         """

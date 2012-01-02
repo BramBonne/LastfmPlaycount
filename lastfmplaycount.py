@@ -66,6 +66,8 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         for id in self.player_cb_ids:
             sp.disconnect (id)
         self.player_cb_ids = ()
+        
+        self._config.write()
 	
     def playing_entry_changed (self, sp, entry):
         """
