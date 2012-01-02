@@ -32,8 +32,7 @@ from urllib import urlopen, urlencode
 
 from threading import Thread
 
-from ConfigParser import RawConfigParser
-from os import path
+from config import Config
 
 LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
 
@@ -51,7 +50,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         self.emitting_uri_notify = False
         self.db = self.object.props.db
 
-        self._username = self.get_username()
+        self._config = Config()
 
         sp = self.object.props.shell_player
         self.player_cb_ids = (
@@ -67,19 +66,6 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         for id in self.player_cb_ids:
             sp.disconnect (id)
         self.player_cb_ids = ()
-	
-    def get_username(self):
-        """
-        Get the username from the session file of rhythmbox' audioscrobbler
-        plugin as per http://mail.gnome.org/archives/rhythmbox-devel/2011-December/msg00029.html
-        """
-        config = RawConfigParser()
-        # Expanduser expands '~' into '/home/<username>/'
-        as_session = open(path.expanduser('~/.local/share/rhythmbox/audioscrobbler/sessions'), 'r')
-        config.readfp(as_session)
-        username = config.get('Last.fm', 'username')
-        print "Parsed Last.fm username: %s" % username
-        return username
 	
     def playing_entry_changed (self, sp, entry):
         """
@@ -112,7 +98,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         @title  The title of the song
         """
         params = urlencode({'method':'track.getinfo', 'api_key':LASTFM_API_KEY,
-            'artist':artist, 'track':title, 'username':self._username, 'autocorrect':1})
+            'artist':artist, 'track':title, 'username':self._config.get_username(), 'autocorrect':1})
         response = minidom.parse(urlopen("http://ws.audioscrobbler.com/2.0/?%s" % params))
         playcount = response.getElementsByTagName("userplaycount")[0].childNodes[0].data
         playcount = int(playcount)
