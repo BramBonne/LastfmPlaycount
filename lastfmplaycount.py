@@ -31,6 +31,7 @@ from xml.dom import minidom
 from urllib import urlopen, urlencode
 
 from threading import Thread
+from time import sleep
 
 from config import Config
 
@@ -68,6 +69,27 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         self.player_cb_ids = ()
         
         self._config.write()
+        
+    def update_all(self):
+        """
+        Update the entire library in a separate thread.
+        Calling this function might take a while, as the last.fm service restricts
+        the maximum number of API calls per minute
+        """
+        print "Updating entire collection"
+        newthread = Thread(target=self._update_all_unthreaded, args=())
+        newthread.start()
+    
+    def _update_all_unthreaded (self):
+        """
+        Update the entire library.
+        Calling this function might take a while, as the last.fm service restricts
+        the maximum number of API calls per minute
+        This is a helper function to update_all
+        """
+        for id in range(self.db.entry_count()):
+            self.update_entry(self.db.entry_lookup_by_id(id))
+            sleep(2)
 	
     def playing_entry_changed (self, sp, entry):
         """
@@ -85,6 +107,8 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         Updates The database entry for the song provided
         @entry  The song that needs to be updated
         """
+        if entry is None:
+            return
         artist = entry.get_string(RB.RhythmDBPropType.ARTIST)
         title = entry.get_string(RB.RhythmDBPropType.TITLE)
         #old_playcount = entry.get_int(RB.RhythmDBPropType.PLAY_COUNT)
@@ -96,7 +120,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
             print "Setting rating for \"%s - %s\" to %d to 5 (loved track)" % (artist, title, playcount)
             self.db.entry_set(entry, RB.RhythmDBPropType.RATING, 5)
         self.db.commit()
-	
+        
     def get_info(self, artist, title):
         """
         Invokes Last.fm's API to get the playcount for the provided song
@@ -107,8 +131,14 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         params = urlencode({'method':'track.getinfo', 'api_key':LASTFM_API_KEY,
             'artist':artist, 'track':title, 'username':self._config.get_username(), 'autocorrect':1})
         response = minidom.parse(urlopen("http://ws.audioscrobbler.com/2.0/?%s" % params))
-        playcount = response.getElementsByTagName("userplaycount")[0].childNodes[0].data
-        playcount = int(playcount)
-        lovedtrack = response.getElementsByTagName("userloved")[0].childNodes[0].data
-        lovedtrack = bool(int(lovedtrack))
+        try:
+            playcount = response.getElementsByTagName("userplaycount")[0].childNodes[0].data
+            playcount = int(playcount)
+        except:
+            playcount = 0
+        try:
+            lovedtrack = response.getElementsByTagName("userloved")[0].childNodes[0].data
+            lovedtrack = bool(int(lovedtrack))
+        except:
+            lovedtrack = False
         return (playcount,lovedtrack)
