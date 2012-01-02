@@ -77,10 +77,10 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         """
         if entry is not None:
             # Start a new thread so UI is not blocked
-            newthread = Thread(target=self.update_playcount, args=(entry,))
+            newthread = Thread(target=self.update_entry, args=(entry,))
             newthread.start()
 
-    def update_playcount (self, entry):
+    def update_entry (self, entry):
         """
         Updates The database entry for the song provided
         @entry  The song that needs to be updated
@@ -88,20 +88,27 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         artist = entry.get_string(RB.RhythmDBPropType.ARTIST)
         title = entry.get_string(RB.RhythmDBPropType.TITLE)
         #old_playcount = entry.get_int(RB.RhythmDBPropType.PLAY_COUNT)
-        playcount = self.get_playcount(artist, title)
-        print "Setting playcount for \"%s - %s\" to %d" % (artist, title, playcount)
-        self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
+        playcount, lovedtrack = self.get_info(artist, title)
+        if self._config.get_update_playcounts():
+            print "Setting playcount for \"%s - %s\" to %d" % (artist, title, playcount)
+            self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
+        if self._config.get_update_ratings() and lovedtrack:
+            print "Setting rating for \"%s - %s\" to %d to 5 (loved track)" % (artist, title, playcount)
+            self.db.entry_set(entry, RB.RhythmDBPropType.RATING, 5)
         self.db.commit()
 	
-    def get_playcount(self, artist, title):
+    def get_info(self, artist, title):
         """
         Invokes Last.fm's API to get the playcount for the provided song
         @artist The artist of the song
         @title  The title of the song
+        @return The playcount, and whether or not the track is loved
         """
         params = urlencode({'method':'track.getinfo', 'api_key':LASTFM_API_KEY,
             'artist':artist, 'track':title, 'username':self._config.get_username(), 'autocorrect':1})
         response = minidom.parse(urlopen("http://ws.audioscrobbler.com/2.0/?%s" % params))
         playcount = response.getElementsByTagName("userplaycount")[0].childNodes[0].data
         playcount = int(playcount)
-        return playcount
+        lovedtrack = response.getElementsByTagName("userloved")[0].childNodes[0].data
+        lovedtrack = bool(int(lovedtrack))
+        return (playcount,lovedtrack)

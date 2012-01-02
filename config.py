@@ -28,8 +28,8 @@ class Config:
         except:
             print "Config file does not exist. Using default values."
         # If no values exist, fill in default ones
-        if not self._config_parser.has_option('LastFmPlaycount', 'update_playcount'):
-            self.set_update_playcount(True)
+        if not self._config_parser.has_option('LastFmPlaycount', 'update_playcounts'):
+            self.set_update_playcounts(True)
         if not self._config_parser.has_option('LastFmPlaycount', 'update_ratings'):
             self.set_update_ratings(True)
         
@@ -43,22 +43,27 @@ class Config:
             
         return self._username
         
-    def get_update_playcount(self):
+    def get_update_playcounts(self):
         """
         @return Whether the user has specified that he wants his playcounts updated
         """
-        return self._config_parser.getboolean('LastFmPlaycount', 'update_playcount')
+        return self._config_parser.getboolean('LastFmPlaycount', 'update_playcounts')
         
-    def set_update_playcount(self, update):
+    def set_update_playcounts(self, update):
         """
         Sets whether the user wants his playcounts to be updated
         @update True if the user wants his playcounts to be updated
         """
+        # Configparser only allows strings to be stored
+        if update == True:
+            update = 'True'
+        else:
+            update = 'False'
         try:
-            self._config_parser.set('LastFmPlaycount', 'update_playcount', update)
+            self._config_parser.set('LastFmPlaycount', 'update_playcounts', update)
         except NoSectionError:
             self._config_parser.add_section('LastFmPlaycount')
-            self._config_parser.set('LastFmPlaycount', 'update_playcount', update)
+            self._config_parser.set('LastFmPlaycount', 'update_playcounts', update)
         
     def get_update_ratings(self):
         """
@@ -71,6 +76,11 @@ class Config:
         Sets whether the user wants his ratings to be updated
         @update True if the user wants his ratings to be updated
         """
+        # Configparser only allows strings to be stored
+        if update == True:
+            update = 'True'
+        else:
+            update = 'False'
         try:
             self._config_parser.set('LastFmPlaycount', 'update_ratings', update)
         except NoSectionError:
