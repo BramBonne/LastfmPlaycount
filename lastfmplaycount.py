@@ -58,6 +58,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
 	        sp.connect ('playing-song-changed', self.playing_entry_changed),
         )
         self.playing_entry_changed (sp, sp.get_playing_entry ())
+        print "Activation finished"
 
     def do_deactivate (self):
         """
@@ -112,16 +113,17 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         artist = entry.get_string(RB.RhythmDBPropType.ARTIST)
         title = entry.get_string(RB.RhythmDBPropType.TITLE)
         #old_playcount = entry.get_int(RB.RhythmDBPropType.PLAY_COUNT)
-        playcount, lovedtrack = self.get_info(artist, title)
+        playcount, lovedtrack = self.get_lastfm_info(artist, title)
+        print "Updating entry \"%s - %s\"" % (artist, title)
         if self._config.get_update_playcounts():
-            print "Setting playcount for \"%s - %s\" to %d" % (artist, title, playcount)
+            print "\tSetting playcount to %d" % (playcount)
             self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
         if self._config.get_update_ratings() and lovedtrack:
-            print "Setting rating for \"%s - %s\" to %d to 5 (loved track)" % (artist, title, playcount)
+            print "\tSetting rating to 5 (loved track)"
             self.db.entry_set(entry, RB.RhythmDBPropType.RATING, 5)
         self.db.commit()
         
-    def get_info(self, artist, title):
+    def get_lastfm_info(self, artist, title):
         """
         Invokes Last.fm's API to get the playcount for the provided song
         @artist The artist of the song
