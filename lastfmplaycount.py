@@ -33,7 +33,7 @@ from urllib import urlopen, urlencode
 from threading import Thread
 from time import sleep
 
-from config import Config
+from lastfmplaycountconfig import Config
 
 LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
 
