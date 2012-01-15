@@ -38,7 +38,7 @@ class Config:
         """
         if self._username is None:
             # If the username was not filled in before, check if it is now
-            self._username = self._retrieve_username()
+            self._username = self._parse_username()
             
         return self._username
         
@@ -84,6 +84,10 @@ class Config:
         # Expanduser expands '~' into '/home/<username>/'
         as_session = open(path.expanduser('~/.local/share/rhythmbox/audioscrobbler/sessions'), 'r')
         username_config_parser.readfp(as_session)
-        username = username_config_parser.get('Last.fm', 'username')
-        print "Parsed Last.fm username: %s" % username
-        self._username = username
+        try:
+            username = username_config_parser.get('Last.fm', 'username')
+            print "Parsed Last.fm username: %s" % username
+            self._username = username
+        except:
+            print "Error: last.fm sessions file could not be parsed. Username set to 'None'"
+            self._username = None
