@@ -48,6 +48,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         """
         Called when plugin is activated
         """
+        self._updating_all = False
         self.emitting_uri_notify = False
         self.db = self.object.props.db
 
@@ -77,7 +78,6 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         Calling this function might take a while, as the last.fm service restricts
         the maximum number of API calls per minute
         """
-        print "Updating entire collection"
         newthread = Thread(target=self._update_all_unthreaded, args=())
         newthread.start()
     
@@ -88,9 +88,14 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         the maximum number of API calls per minute
         This is a helper function to update_all
         """
-        for id in range(self.db.entry_count()):
-            self.update_entry(self.db.entry_lookup_by_id(id))
-            sleep(2)
+        if not self._updating_all:
+            print "Starting update of entire collection"
+            self._updating_all = True
+            for id in range(self.db.entry_count()):
+                self.update_entry(self.db.entry_lookup_by_id(id))
+                sleep(2)
+            self._updating_all = False
+            self.set_run_update_all(False)
 	
     def playing_entry_changed (self, sp, entry):
         """
@@ -102,6 +107,11 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
             # Start a new thread so UI is not blocked
             newthread = Thread(target=self.update_entry, args=(entry,))
             newthread.start()
+        #Ugly hack because I can't seem to be able to access the main class in the config class
+        print "playing_entry_changed", self._config._run_update_all, self._updating_all
+        if self._config.get_run_update_all() and not self._updating_all:
+            print "Calling update_all"
+            self.update_all()
 
     def update_entry (self, entry):
         """
