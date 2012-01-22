@@ -114,12 +114,11 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         title = entry.get_string(RB.RhythmDBPropType.TITLE)
         #old_playcount = entry.get_int(RB.RhythmDBPropType.PLAY_COUNT)
         playcount, lovedtrack = self.get_lastfm_info(artist, title)
-        print "Updating entry \"%s - %s\"" % (artist, title)
         if self._config.get_update_playcounts():
-            print "\tSetting playcount to %d" % (playcount)
+            print "\tSetting playcount of \"%s - %s\" to %d" % (artist, title, playcount)
             self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
         if self._config.get_update_ratings() and lovedtrack:
-            print "\tSetting rating to 5 (loved track)"
+            print "\tSetting rating of \"%s - %s\" to 5 (loved track)" % (artist, title)
             self.db.entry_set(entry, RB.RhythmDBPropType.RATING, 5)
         self.db.commit()
         

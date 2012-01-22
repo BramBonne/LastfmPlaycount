@@ -3,14 +3,23 @@ import gconf
 from ConfigParser import RawConfigParser, NoSectionError
 from os import path
 
+import rb
+import gi
+from gi.repository import GObject, Gtk, Gdk, GdkPixbuf, Gio, PeasGtk, RB
+
 GCONF_DIR = '/apps/rhythmbox/plugins/lastfmplaycount'
 
-class Config:
+class Config(GObject.GObject, PeasGtk.Configurable):
     """
     Read and write configuration data for Last.fm playcount sync plugin
     """
+    __gtype_name__ = 'LastfmplaycountConfig'
+    object = GObject.property(type=GObject.GObject)
     
     def __init__(self):
+        print "INIT", self
+        GObject.GObject.__init__(self)
+        
         self._parse_username()
         
         self._gconf_client = gconf.client_get_default()
@@ -31,12 +40,38 @@ class Config:
             self.set_update_playcounts(True)
         if self._gconf_client.get_without_default(GCONF_DIR + '/update_ratings') is None:
             self.set_update_ratings(True)
+            
+    def do_create_configure_widget(self):
+        """
+        Called when the configuration UI button is pressed
+        """
+        print "Creating configuration dialog"
+        builder = Gtk.Builder()
+        builder.add_from_file(rb.find_plugin_file(self, "lastfmplaycount-prefs.ui"))
+
+        dialog = builder.get_object('lastfmplaycountsync-preferences')
+        if self.get_username() is not None:
+            builder.get_object('username').set_markup('Detected username: ' + self.get_username())
+        builder.get_object('update_playcounts').set_active(self.get_update_playcounts())
+        builder.get_object('update_ratings').set_active(self.get_update_ratings())
+        builder.get_object('loved_rating').set_range(0,5)
+        builder.get_object('loved_rating').set_value(5)
+        builder.get_object('rating_box').set_sensitive(False)
+        
+        callbacks = {
+            "update_playcounts_toggled" : self._update_playcounts_toggled,
+            "update_ratings_toggled" : self._update_ratings_toggled,
+            "sync_collection" : self._sync_collection,
+        }
+        builder.connect_signals(callbacks)
+
+        return dialog
         
     def get_username(self):
         """
         @return the user's Last.fm username
         """
-        if self._username is None:
+        if not hasattr(self, '_username') or self._username is None:
             # If the username was not filled in before, check if it is now
             self._username = self._parse_username()
             
@@ -51,8 +86,9 @@ class Config:
     def set_update_playcounts(self, update):
         """
         Sets whether the user wants his playcounts to be updated
-        @update True if the user wants his playcounts to be updated
+        @param update True if the user wants his playcounts to be updated
         """
+        print "Setting updating of playcounts to %r" % update
         self._gconf_client.set_bool(GCONF_DIR + '/update_playcounts', update)
         
     def get_update_ratings(self):
@@ -64,8 +100,9 @@ class Config:
     def set_update_ratings(self, update):
         """
         Sets whether the user wants his ratings to be updated
-        @update True if the user wants his ratings to be updated
+        @param update True if the user wants his ratings to be updated
         """
+        print "Setting updating of ratings to %r" % update
         self._gconf_client.set_bool(GCONF_DIR + '/update_ratings', update)
         
     def write(self):
@@ -91,3 +128,28 @@ class Config:
         except:
             print "Error: last.fm sessions file could not be parsed. Username set to 'None'"
             self._username = None
+            
+    def _update_playcounts_toggled(self, widget):
+        """
+        Callback function
+        @param widget The widget containing the toggle button
+        """
+        enabled = widget.get_active()
+        print enabled
+        self.set_update_playcounts(enabled)
+        
+    def _update_ratings_toggled(self, widget):
+        """
+        Callback function
+        @param widget The widget containing the toggle button
+        """
+        enabled = widget.get_active()
+        print enabled
+        self.set_update_ratings(enabled)
+        
+    def _sync_collection(self, widget):
+        """
+        Callback function
+        @param widget The button
+        """
+        # TODO: Implement this function so it really calls the sync function
