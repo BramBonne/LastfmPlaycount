@@ -93,7 +93,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
             self._updating_all = True
             for id in range(self.db.entry_count()):
                 self.update_entry(self.db.entry_lookup_by_id(id))
-                sleep(2)
+                sleep(1)
             self._updating_all = False
             self.set_run_update_all(False)
 	
