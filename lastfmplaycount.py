@@ -122,14 +122,17 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
             return
         artist = entry.get_string(RB.RhythmDBPropType.ARTIST)
         title = entry.get_string(RB.RhythmDBPropType.TITLE)
-        #old_playcount = entry.get_int(RB.RhythmDBPropType.PLAY_COUNT)
         try:
             playcount, lovedtrack = self.get_lastfm_info(artist, title)
             if self._config.get_update_playcounts():
-                print "\tSetting playcount of \"%s - %s\" to %d" % (artist, title, playcount)
-                self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
+                old_playcount = entry.get_int(RB.RhythmDBPropType.PLAY_COUNT)
+                if old_playcount < playcount:
+                    print "Setting playcount of \"%s - %s\" to %d" % (artist, title, playcount)
+                    self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
+                else:
+                    print "Old playcount for \"%s - %s\" was higher than the new one (%d instead of %d). Not updating (assuming last.fm knows less)" % (artist, title, old_playcount, playcount)
             if self._config.get_update_ratings() and lovedtrack:
-                print "\tSetting rating of \"%s - %s\" to 5 (loved track)" % (artist, title)
+                print "Setting rating of \"%s - %s\" to 5 (loved track)" % (artist, title)
                 self.db.entry_set(entry, RB.RhythmDBPropType.RATING, 5)
             self.db.commit()
         except IOError as (errno, strerror):
