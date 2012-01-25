@@ -108,7 +108,6 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
             newthread = Thread(target=self.update_entry, args=(entry,))
             newthread.start()
         #Ugly hack because I can't seem to be able to access the main class in the config class
-        print "playing_entry_changed", self._config._run_update_all, self._updating_all
         if self._config.get_run_update_all() and not self._updating_all:
             print "Calling update_all"
             self.update_all()
@@ -125,18 +124,20 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         try:
             playcount, lovedtrack = self.get_lastfm_info(artist, title)
             if self._config.get_update_playcounts():
-                old_playcount = entry.get_int(RB.RhythmDBPropType.PLAY_COUNT)
+                old_playcount = entry.get_ulong(RB.RhythmDBPropType.PLAY_COUNT)
                 if old_playcount < playcount:
-                    print "Setting playcount of \"%s - %s\" to %d" % (artist, title, playcount)
+                    print "Setting playcount of \"%r - %r\" to %d" % (artist, title, playcount)
                     self.db.entry_set(entry, RB.RhythmDBPropType.PLAY_COUNT, playcount)
+                elif old_playcount > playcount:
+                    print "Old playcount for \"%r - %r\" was higher than the new one (%d instead of %d). Not updating (assuming last.fm knows less)" % (artist, title, old_playcount, playcount)
                 else:
-                    print "Old playcount for \"%s - %s\" was higher than the new one (%d instead of %d). Not updating (assuming last.fm knows less)" % (artist, title, old_playcount, playcount)
+                    print "Playcount for \%r - \%r remained the same. Not updating" % (artist, title)
             if self._config.get_update_ratings() and lovedtrack:
-                print "Setting rating of \"%s - %s\" to 5 (loved track)" % (artist, title)
+                print "Setting rating of \"%r - %r\" to 5 (loved track)" % (artist, title)
                 self.db.entry_set(entry, RB.RhythmDBPropType.RATING, 5)
             self.db.commit()
         except IOError as (errno, strerror):
-            print "Could not update \"%s - %s\ (error (%r): %s)" % (artist, title, errno, strerror)
+            print "Could not update \"%r - %r\ (error (%r): %s)" % (artist, title, errno, strerror)
         
     def get_lastfm_info(self, artist, title):
         """
