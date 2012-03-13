@@ -26,6 +26,7 @@ import rb
 
 import gi
 from gi.repository import GObject, Gtk, Gdk, GdkPixbuf, Gio, Peas, RB
+from noconflict import classmaker
 
 from xml.dom import minidom
 from urllib import urlopen, urlencode
@@ -39,6 +40,7 @@ LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
 
 class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
     __gtype_name__ = 'LastFmPlaycount'
+    __metaclass__ = classmaker()
     object = GObject.property(type=GObject.GObject)
 	
     def __init__ (self):
