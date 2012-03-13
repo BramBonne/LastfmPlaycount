@@ -1,3 +1,4 @@
+# Found at http://code.activestate.com/recipes/204197-solving-the-metaclass-conflict/
 import inspect, types, __builtin__
 ############## preliminary: two utility functions #####################
 def skip_redundant(iterable, skipset=None):
