@@ -68,9 +68,7 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         for id in self.player_cb_ids:
             sp.disconnect (id)
         self.player_cb_ids = ()
-        
-        self._config.write()
-        
+                
     def update_all(self):
         """
         Update the entire library in a separate thread.
