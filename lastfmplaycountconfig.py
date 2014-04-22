@@ -1,4 +1,7 @@
-import gconf
+try:
+    from gi.repository import GConf
+except ImportError:
+    import gconf
 
 from ConfigParser import RawConfigParser, NoSectionError
 from os import path
@@ -19,9 +22,12 @@ class Config(GObject.GObject, PeasGtk.Configurable):
         self._run_update_all = False #Ugly hack because I can't seem to be able to access the main class here
     
         self._parse_username()
-        
-        self._gconf_client = gconf.client_get_default()
-        self._gconf_client.add_dir(GCONF_DIR, gconf.CLIENT_PRELOAD_RECURSIVE)
+        try:
+            self._gconf_client = GConf.Client.get_default()
+            self._gconf_client.add_dir(GCONF_DIR, GConf.ClientPreloadType.PRELOAD_RECURSIVE)
+        except Exception as e:
+            self._gconf_client = gconf.client_get_default()
+            self._gconf_client.add_dir(GCONF_DIR, gconf.CLIENT_PRELOAD_RECURSIVE)
         
         self._init_config()
         
