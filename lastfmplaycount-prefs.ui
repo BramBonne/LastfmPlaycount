@@ -74,7 +74,7 @@ is enabled and that your credentials are filled in.</property>
                   <object class="GtkLabel" id="labelie">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">and give them rating</property>
+                    <property name="label" translatable="yes"> and give them rating</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
