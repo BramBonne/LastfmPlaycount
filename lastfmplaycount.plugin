@@ -1,5 +1,5 @@
 [Plugin]
-Loader=python
+Loader=python3
 Module=lastfmplaycount
 IAge=1
 Depends=rb
