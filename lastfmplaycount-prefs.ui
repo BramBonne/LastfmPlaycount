@@ -4,7 +4,7 @@
   <object class="GtkWindow" id="Lastfmplaycountsync-prefs">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Last.fm playcount/loved tracks syncyhronization configuration</property>
+    <property name="title" translatable="yes">Last.fm playcount sync</property>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
@@ -16,9 +16,6 @@
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">No Last.fm username detected! Make sure that the Last.fm plugin
 is enabled and that your credentials are filled in.</property>
-            <attributes>
-              <attribute name="foreground" value="#ffff00000000"/>
-            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -74,7 +71,7 @@ is enabled and that your credentials are filled in.</property>
                   <object class="GtkLabel" id="labelie">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes"> and give them rating</property>
+                    <property name="label" translatable="yes"> and give them rating </property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -111,25 +108,6 @@ is enabled and that your credentials are filled in.</property>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="sync_now">
-            <property name="label" translatable="yes">Synchronize the entire collection now. This might take a long time.
-Moreover, you have to start a track before the updating will
-actually commence (this is because of an ugly hack and oh my the
-amount of text on this button is far too high).
-tl; dr: EXPERIMENTAL!</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
-            <signal name="clicked" handler="sync_collection" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
           </packing>
         </child>
       </object>

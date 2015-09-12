@@ -19,8 +19,6 @@ class Config(GObject.GObject, PeasGtk.Configurable):
     __gtype_name__ = 'LastfmplaycountConfig'
 
     def __init__(self):
-        self._run_update_all = False #Ugly hack because I can't seem to be able to access the main class here
-
         self._parse_username()
         try:
             self._gconf_client = GConf.Client.get_default()
@@ -44,7 +42,6 @@ class Config(GObject.GObject, PeasGtk.Configurable):
             self.set_update_playcounts(True)
         if self._gconf_client.get_without_default(GCONF_DIR + '/update_ratings') is None:
             self.set_update_ratings(True)
-        self.set_run_update_all(False)
 
     def do_create_configure_widget(self):
         """
@@ -66,7 +63,6 @@ class Config(GObject.GObject, PeasGtk.Configurable):
         callbacks = {
             "update_playcounts_toggled" : self._update_playcounts_toggled,
             "update_ratings_toggled" : self._update_ratings_toggled,
-            "sync_collection" : self._sync_collection,
         }
         builder.connect_signals(callbacks)
 
@@ -110,20 +106,6 @@ class Config(GObject.GObject, PeasGtk.Configurable):
         print( "Setting updating of ratings to %r" % update)
         self._gconf_client.set_bool(GCONF_DIR + '/update_ratings', update)
 
-    def get_run_update_all(self):
-        """
-        @return Whether the collection is being updated right now
-        """
-        return self._gconf_client.get_bool(GCONF_DIR + '/run_update_all')
-
-    def set_run_update_all(self, update):
-        """
-        Sets whether the collection should be updated right now
-        @param update True if we should start updating the collection
-        """
-        print("Run_update %r" % update)
-        self._gconf_client.set_bool(GCONF_DIR + '/run_update_all', update)
-
     def write(self):
         """
         Writes config file to permanent storage
@@ -165,10 +147,3 @@ class Config(GObject.GObject, PeasGtk.Configurable):
         enabled = widget.get_active()
         print(enabled)
         self.set_update_ratings(enabled)
-
-    def _sync_collection(self, widget):
-        """
-        Callback function
-        @param widget The button
-        """
-        self.set_run_update_all(True) #Ugly hack because I can't seem to be able to access the main class here
