@@ -1,16 +1,11 @@
-try:
-    from gi.repository import GConf
-except ImportError:
-    import gconf
-
-from configparser import RawConfigParser, NoSectionError
+from configparser import RawConfigParser
 from os import path
 
 import rb
-import gi
-from gi.repository import GObject, Gtk, Gdk, GdkPixbuf, Gio, PeasGtk, RB
 
-GCONF_DIR = '/apps/rhythmbox/plugins/lastfmplaycount'
+from gi.repository import GObject, Gtk, Gio, PeasGtk
+
+DCONF_DIR = 'org.gnome.rhythmbox.plugins.lastfmplaycount'
 
 class Config(GObject.GObject, PeasGtk.Configurable):
     """
@@ -20,28 +15,7 @@ class Config(GObject.GObject, PeasGtk.Configurable):
 
     def __init__(self):
         self._parse_username()
-        try:
-            self._gconf_client = GConf.Client.get_default()
-            self._gconf_client.add_dir(GCONF_DIR, GConf.ClientPreloadType.PRELOAD_RECURSIVE)
-        except Exception as e:
-            self._gconf_client = gconf.client_get_default()
-            self._gconf_client.add_dir(GCONF_DIR, gconf.CLIENT_PRELOAD_RECURSIVE)
-
-        self._init_config()
-
-    def __del__(self):
-        self.write()
-
-    def _init_config(self):
-        """
-        Creates default values if none exist (this should actually be solved
-        with a GConf Schema, but documentation seems to be locked tight behind
-        the gates of Mordor).
-        """
-        if self._gconf_client.get_without_default(GCONF_DIR + '/update_playcounts') is None:
-            self.set_update_playcounts(True)
-        if self._gconf_client.get_without_default(GCONF_DIR + '/update_ratings') is None:
-            self.set_update_ratings(True)
+        self.settings = Gio.Settings(DCONF_DIR)
 
     def do_create_configure_widget(self):
         """
@@ -82,21 +56,23 @@ class Config(GObject.GObject, PeasGtk.Configurable):
         """
         @return Whether the user has specified that he wants his playcounts updated
         """
-        return self._gconf_client.get_bool(GCONF_DIR + '/update_playcounts')
+
+        return self.settings["update-playcounts"]
 
     def set_update_playcounts(self, update):
         """
         Sets whether the user wants his playcounts to be updated
         @param update True if the user wants his playcounts to be updated
         """
+
         print("Setting updating of playcounts to %r" % update)
-        self._gconf_client.set_bool(GCONF_DIR + '/update_playcounts', update)
+        self.settings["update-playcounts"] = update
 
     def get_update_ratings(self):
         """
         @return Whether the user has specified that he wants his ratings updated
         """
-        return self._gconf_client.get_bool(GCONF_DIR + '/update_ratings')
+        return self.settings["update-ratings"]
 
     def set_update_ratings(self, update):
         """
@@ -104,14 +80,7 @@ class Config(GObject.GObject, PeasGtk.Configurable):
         @param update True if the user wants his ratings to be updated
         """
         print( "Setting updating of ratings to %r" % update)
-        self._gconf_client.set_bool(GCONF_DIR + '/update_ratings', update)
-
-    def write(self):
-        """
-        Writes config file to permanent storage
-        """
-        # Not needed for gconf
-        pass
+        self.settings["update-ratings"] = update
 
     def _parse_username(self):
         """

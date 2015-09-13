@@ -26,6 +26,7 @@ import rb
 
 import gi
 from gi.repository import GObject, Gtk, Gdk, GdkPixbuf, Gio, Peas, RB
+from gi.repository import GObject, Peas, RB
 
 from xml.dom import minidom
 import urllib
@@ -38,6 +39,7 @@ from lastfmplaycountconfig import Config
 LASTFM_API_KEY = "c1c872970090c90f65aed19c97519962"
 
 class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
+    __gtype_name__ = 'LastFmPlaycount'
     object = GObject.property(type=GObject.GObject)
 
     def __init__ (self):
@@ -79,8 +81,6 @@ class LastfmPlaycountPlugin (GObject.GObject, Peas.Activatable):
         for id in self.player_cb_ids:
             sp.disconnect (id)
         self.player_cb_ids = ()
-
-        self._config.write()
 
         # Delete all references. This is needed according to the reference doc
         # at https://wiki.gnome.org/Apps/Rhythmbox/Plugins/WritingGuide

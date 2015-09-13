@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+	<schema id="org.gnome.rhythmbox.plugins.lastfmplaycount" path="/org/gnome/rhythmbox/plugins/lastfmplaycount/">
+		
+		<key name="update-playcounts" type="b">
+			<default>true</default>
+			<summary>Update playcounts</summary>
+			<description></description>
+		</key>
+		
+		<key name="update-ratings" type="b">
+			<default>true</default>
+			<summary>Update ratings</summary>
+			<description></description>
+		</key>
+		
+		<key name="run-update-all" type="b">
+			<default>false</default>
+			<summary>Update whole collection</summary>
+			<description></description>
+		</key>
+
+	</schema>
+</schemalist>
