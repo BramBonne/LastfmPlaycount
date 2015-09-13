@@ -13,6 +13,7 @@ To install the plugin for the current user only, run the install script with
 ```
 ./install.sh
 ```
+Note that you will still need root (sudo) access in order to install the correct dconf schema.
 
 To install system-wide (for all users), run this script as root with
 ```
